@@ -1,0 +1,64 @@
+== Leave-one-launch-out results (each row = trained on the other two launches)
+
+-- auc
+held_out           doac  sglt2   arni   mean
+model                                       
+random            0.516  0.509  0.511  0.512
+biggest_register  0.501  0.455  0.454  0.470
+logistic          0.550  0.612  0.576  0.579
+logistic_region   0.572  0.568  0.558  0.566
+boosted_trees     0.544  0.576  0.569  0.563
+logistic_lean     0.567  0.626  0.600  0.598
+lean_x_register   0.534  0.510  0.502  0.515
+
+-- precision_top20
+held_out           doac  sglt2   arni   mean
+model                                       
+random            0.207  0.218  0.213  0.213
+biggest_register  0.195  0.156  0.158  0.170
+logistic          0.240  0.304  0.259  0.268
+logistic_region   0.258  0.256  0.235  0.250
+boosted_trees     0.245  0.271  0.257  0.258
+logistic_lean     0.249  0.315  0.267  0.277
+lean_x_register   0.215  0.213  0.188  0.205
+
+-- lift_top20
+held_out           doac  sglt2   arni   mean
+model                                       
+random            1.035  1.092  1.064  1.064
+biggest_register  0.975  0.779  0.791  0.849
+logistic          1.200  1.519  1.297  1.339
+logistic_region   1.291  1.280  1.175  1.249
+boosted_trees     1.225  1.357  1.285  1.289
+logistic_lean     1.246  1.577  1.334  1.385
+lean_x_register   1.077  1.067  0.938  1.027
+
+-- volume_top20
+held_out           doac  sglt2   arni   mean
+model                                       
+random            0.207  0.207  0.198  0.204
+biggest_register  0.421  0.346  0.356  0.374
+logistic          0.166  0.222  0.228  0.206
+logistic_region   0.168  0.192  0.213  0.191
+boosted_trees     0.190  0.209  0.228  0.209
+logistic_lean     0.172  0.232  0.214  0.206
+lean_x_register   0.399  0.390  0.370  0.386
+
+== Permutation importance, logistic (drop in held-out AUC when a feature is shuffled)
+                                    doac   sglt2    arni    mean
+older_alt_per_1k_reg_pct          0.0135  0.0441  0.0291  0.0289
+area_adopt_speed_pct              0.0255  0.0416  0.0085  0.0252
+total_items_per_1k_list_pct       0.0017  0.0107  0.0209  0.0111
+register_pct                     -0.0009  0.0104  0.0142  0.0079
+prevalence_pct                    0.0024  0.0004 -0.0002  0.0008
+area_older_alt_per_1k_reg_pct     0.0004 -0.0026 -0.0005 -0.0009
+area_total_items_per_1k_list_pct -0.0040  0.0021 -0.0026 -0.0015
+adopt_speed_pct                   0.0003 -0.0095 -0.0112 -0.0068
+
+== Final model (lean logistic, all three launches) - standardised coefficients
+(positive = more likely to be a top-20% practice; size = effect of a 1-SD change)
+area_adopt_speed_pct           0.218
+older_alt_per_1k_reg_pct       0.173
+total_items_per_1k_list_pct    0.149
+prevalence_pct                 0.043
+register_pct                  -0.113

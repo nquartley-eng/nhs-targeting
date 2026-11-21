@@ -1,0 +1,14 @@
+# Data files are large and re-downloadable; keep folders only
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+.DS_Store
+.pytest_cache/
+# local preview config
+.claude/
+# intermediate build file: its contents are already inlined in reports/tool/index.html
+reports/tool/practices.json

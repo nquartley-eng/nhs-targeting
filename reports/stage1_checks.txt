@@ -1,0 +1,32 @@
+== First month each drug is prescribed by >=1, >=10, >=100 GP practices
+Sacubitril/valsartan         201602  201604  201607   (data starts 201602)
+Edoxaban                     201507  201510  201603   (data starts 201507)
+Warfarin sodium              201008  201008  201008   (data starts 201008)
+Dabigatran etexilate         201008  201008  201106   (data starts 201008)
+Rivaroxaban                  201008  201008  201008   (data starts 201008)
+Apixaban                     201111  201212  201304   (data starts 201111)
+Dapagliflozin                201212  201301  201302   (data starts 201212)
+Dapagliflozin/metformin      201404  201405  201412   (data starts 201404)
+Canagliflozin                201402  201404  201406   (data starts 201402)
+Empagliflozin                201408  201409  201501   (data starts 201408)
+Canagliflozin/metformin      201412  201503  201512   (data starts 201412)
+Empagliflozin/metformin      201510  201511  201605   (data starts 201510)
+Saxagliptin/dapagliflozin    201612  201702  201708   (data starts 201612)
+Ertugliflozin                202510  202510  202510   (data starts 202510)
+Empagliflozin/linagliptin    202510  202510  202510   (data starts 202510)
+
+== Prescribing coverage
+Months available: 201008 to 202609 (113 months)
+GP practices per month: min 6,148, max 8,264
+Practices per year (Jan of each year): 2011: 8,263, 2012: 8,242, 2013: 8,162, 2014: 7,986, 2015: 7,877, 2016: 7,723, 2017: 7,524, 2018: 7,293, 2026: 6,171
+
+== Join checks (QOF practices: prescribing at launch, and still prescribing at outcome)
+sglt2: QOF 2011-12 practices 8,123; prescribing in launch month 201212: 8,092 (99.6%); of those, still prescribing at 201412: 7,847 (97.0%)
+doac: QOF 2010-11 practices 8,245; prescribing in launch month 201109: 8,230 (99.8%); of those, still prescribing at 201309: 7,980 (97.0%)
+arni: QOF 2014-15 practices 7,779; prescribing in launch month 201604: 7,610 (97.8%); of those, still prescribing at 201804: 7,156 (94.0%)
+
+== DOAC class, monthly (items, practices)
+201008:189/155  201009:217/167  201010:210/174  201011:229/188  201012:218/172  201101:188/153  201102:219/177  201103:237/187  201104:259/198  201105:258/186  201106:274/201  201107:262/203  201108:259/186  201109:376/270  201110:492/338  201111:655/434  201112:903/547  201201:1,033/613  201202:1,206/690  201203:1,680/871  201204:1,955/1,000  201205:2,886/1,274  201206:3,510/1,500  201207:4,715/1,823  201208:6,333/2,177  201209:6,960/2,401  201210:8,956/2,726  201211:10,781/3,065  201212:12,538/3,388  201301:14,666/3,668  201302:15,839/3,875  201303:19,341/4,216  201304:22,203/4,462  201305:26,075/4,766  201306:27,090/4,923  201307:33,181/5,208  201308:35,872/5,442  201309:37,399/5,576  201310:43,861/5,838  201311:45,908/5,943  201312:52,352/6,090  201401:56,241/6,262  201402:55,387/6,301  201403:64,985/6,512  201404:70,364/6,603  201405:77,575/6,697  201406:80,200/6,778  201407:94,684/6,918  201408:95,627/6,989  201409:105,171/7,086  201410:119,840/7,205  201411:117,130/7,226  201412:143,605/7,333
+
+== SGLT2 class, monthly (items, practices)
+201212:10/9  201301:67/42  201302:231/130  201303:523/263  201304:724/342  201305:922/425  201306:1,142/518  201307:1,634/724  201308:1,956/853  201309:2,401/1,058  201310:3,274/1,328  201311:4,147/1,620  201312:5,320/1,921  201401:6,265/2,189  201402:6,781/2,389  201403:8,923/2,794  201404:10,282/3,012  201405:12,178/3,349  201406:13,600/3,647

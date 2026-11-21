@@ -1,0 +1,575 @@
+<title>Prescribing Opportunity Finder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: control bar over a map / ranked-list split; detail panel under the list; method notes below. */
+:root {
+  --bg: #f7f8f7;
+  --panel: #ffffff;
+  --ink: #15201d;
+  --ink-2: #4b5753;
+  --ink-3: #74807b;
+  --line: #dfe3e1;
+  --line-2: #eef1ef;
+  --accent: #1c5cab;
+  --accent-soft: #e3edfa;
+  --dot-top: #1c5cab;
+  --dot-mid: #86b6ef;
+  --dot-rest: #d3d8d5;
+  --select: #eb6834;
+  --good: #1a7f4e;
+  --drag: #b4452f;
+  --ok-soft: #e2f3ea;
+  --warn: #8a5a00;
+  --warn-soft: #fbf0d9;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-head: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131816; --panel: #1b211f; --ink: #e9eeec; --ink-2: #b4beba; --ink-3: #87918d;
+    --line: #2d3532; --line-2: #232a28; --accent: #6da7ec; --accent-soft: #1d2e44;
+    --dot-top: #6da7ec; --dot-mid: #256abf; --dot-rest: #39413e; --select: #f08a5d;
+    --good: #4cc38a; --drag: #ef8a74; --ok-soft: #173326; --warn: #e8b45a; --warn-soft: #3a2e16; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131816; --panel: #1b211f; --ink: #e9eeec; --ink-2: #b4beba; --ink-3: #87918d;
+  --line: #2d3532; --line-2: #232a28; --accent: #6da7ec; --accent-soft: #1d2e44;
+  --dot-top: #6da7ec; --dot-mid: #256abf; --dot-rest: #39413e; --select: #f08a5d;
+  --good: #4cc38a; --drag: #ef8a74; --ok-soft: #173326; --warn: #e8b45a; --warn-soft: #3a2e16; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 16px; }
+h1, h2, h3 { font-family: var(--font-head); font-weight: 600; margin: 0; text-wrap: balance; letter-spacing: -0.005em; }
+h1 { font-size: 26px; line-height: 1.15; }
+h2 { font-size: 18px; }
+h3 { font-size: 15px; }
+.mono { font-family: var(--font-mono); font-size: 12px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-2); }
+.faint { color: var(--ink-3); }
+.eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+
+header { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: end; justify-content: space-between; }
+header .lede { max-width: 66ch; color: var(--ink-2); margin: 6px 0 0; }
+header .stamp { color: var(--ink-3); font-size: 12px; text-align: right; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: end; padding: 12px 14px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.ctl { display: grid; gap: 4px; min-width: 0; }
+.ctl label, .ctl .lab { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
+.seg button { font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--ink-2); padding: 6px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.seg button:focus-visible, select:focus-visible, input:focus-visible, .rowbtn:focus-visible, .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+select, input[type="search"] { font: inherit; font-size: 13px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel); color: var(--ink); min-width: 0; }
+input[type="search"] { width: 220px; max-width: 100%; }
+.drugmsg { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; font-size: 13px; color: var(--ink-2);
+  padding-top: 10px; border-top: 1px solid var(--line-2); }
+.chip { font: inherit; font-size: 12.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel);
+  color: var(--ink); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); font-weight: 600; }
+.chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.viewnote { flex: 1 1 260px; color: var(--ink-2); font-size: 12.5px; min-width: 0; }
+
+.status { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; padding: 10px 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--panel); font-size: 13px; color: var(--ink-2); }
+.status .pill { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.status .pill.ok { background: var(--ok-soft); color: var(--good); }
+.status .pill.warn { background: var(--warn-soft); color: var(--warn); }
+.summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.summary > div { background: var(--panel); padding: 10px 14px; min-width: 0; }
+.summary .v { font-family: var(--font-head); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.summary .k { font-size: 12px; color: var(--ink-2); }
+
+.main { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.card > .hd { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: space-between; align-items: baseline; padding: 12px 14px 8px; }
+.mapbox { position: relative; height: 660px; }
+.mapbox canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 14px 12px; font-size: 12px; color: var(--ink-2); border-top: 1px solid var(--line-2); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.tip { position: absolute; pointer-events: none; background: var(--panel); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 9px; font-size: 12px; box-shadow: 0 4px 14px rgba(0,0,0,.12); max-width: 240px; z-index: 2; }
+
+.side { display: grid; gap: 16px; min-width: 0; }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); font-weight: 600;
+  padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 7px 10px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
+tr.sel td { background: var(--accent-soft); }
+.rowbtn { all: unset; cursor: pointer; display: block; }
+.rowbtn b { font-weight: 600; }
+.reason1 { color: var(--ink-2); font-size: 12px; max-width: 44ch; }
+.tier { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.listfoot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; padding: 10px 14px; }
+.btn { font: inherit; font-size: 13px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); cursor: pointer; }
+.btn:hover { border-color: var(--ink-3); }
+
+.detail { padding: 14px; display: grid; gap: 12px; }
+.detail .facts { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--ink-2); font-size: 12.5px; }
+.why { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.why li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 6px; }
+.why .s { font-family: var(--font-mono); font-weight: 600; }
+.why .up .s { color: var(--good); }
+.why .down .s { color: var(--drag); }
+.meters { display: grid; gap: 7px; }
+.meter { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 1fr) 40px; gap: 10px; align-items: center; font-size: 12px; color: var(--ink-2); }
+.bar { height: 6px; background: var(--line-2); border-radius: 3px; position: relative; }
+.bar > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--accent); }
+.empty { padding: 18px 14px; color: var(--ink-2); }
+
+.notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.notes .card { padding: 14px; display: grid; gap: 8px; align-content: start; }
+.notes p { margin: 0; color: var(--ink-2); max-width: 65ch; }
+.notes table td, .notes table th { padding: 4px 6px; }
+
+@media (max-width: 980px) {
+  .main { grid-template-columns: minmax(0, 1fr); }
+  .notes { grid-template-columns: minmax(0, 1fr); }
+  .mapbox { height: auto; aspect-ratio: 4 / 5; max-width: 100%; }
+}
+@media (max-width: 640px) {
+  .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  h1 { font-size: 22px; }
+  header .stamp { text-align: left; }
+  .meter { grid-template-columns: minmax(0, 1fr) 70px 36px; }
+  .hide-sm { display: none; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">GP practice targeting for a new drug launch · England</div>
+      <h1>Prescribing Opportunity Finder</h1>
+      <p class="lede">Which GP practices are most likely to take up a new drug in its first two years? A model trained on three past launches (DOACs 2011, SGLT2 inhibitors 2012, Entresto 2016) and tested on two more (COPD triple inhalers 2017, vortioxetine for depression 2015) scores every practice using only what is known on launch day. Type the drug (or pick one of 18 conditions with a GP register) and say whether it will be first-line or niche.</p>
+    </div>
+    <div class="stamp" id="stamp"></div>
+  </header>
+
+  <section class="controls" aria-label="Filters">
+    <div class="ctl">
+      <label for="drug">New drug (optional)</label>
+      <input type="search" id="drug" list="drug-list" placeholder="e.g. Mounjaro, apixaban" autocomplete="off">
+      <datalist id="drug-list"></datalist>
+    </div>
+    <div class="ctl">
+      <label for="area">Condition the new drug treats</label>
+      <select id="area"></select>
+    </div>
+    <div class="ctl">
+      <span class="lab" id="lab-use">How will it be used?</span>
+      <div class="seg" role="group" aria-labelledby="lab-use" id="seg-use">
+        <button type="button" data-u="standard" aria-pressed="true">First-line / standard care</button>
+        <button type="button" data-u="niche" aria-pressed="false">Niche / later-line</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lab" id="lab-view">Rank by</span>
+      <div class="seg" role="group" aria-labelledby="lab-view" id="seg-view">
+        <button type="button" data-v="propensity" aria-pressed="true">Propensity</button>
+        <button type="button" data-v="opportunity" aria-pressed="false">Opportunity</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <label for="region">Region</label>
+      <select id="region"><option value="">All of England</option></select>
+    </div>
+    <div class="ctl">
+      <label for="q">Find a practice</label>
+      <input type="search" id="q" placeholder="Name, code or postcode" autocomplete="off">
+    </div>
+    <p class="viewnote" id="viewnote"></p>
+    <div class="drugmsg" id="drugmsg" hidden></div>
+  </section>
+
+  <div class="status" id="status" role="note"></div>
+  <section class="summary" id="summary" aria-live="polite"></section>
+
+  <section class="main">
+    <div class="card">
+      <div class="hd"><h2 id="map-title">Practices</h2><span class="faint" style="font-size:12px">Click a dot for its reasons</span></div>
+      <div class="mapbox" id="mapbox">
+        <canvas id="map" aria-label="Map of GP practices coloured by score"></canvas>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="side">
+      <div class="card" id="detail-card">
+        <div class="detail" id="detail"></div>
+      </div>
+      <div class="card">
+        <div class="hd"><h2 id="list-title">Ranked practices</h2><span class="faint" id="list-sub" style="font-size:12px"></span></div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr>
+              <th class="r">#</th><th>Practice</th><th class="r">Register</th><th class="r">Chance of top 20%</th><th class="hide-sm">Main reason</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="listfoot">
+          <button type="button" class="btn" id="more">Show 50 more</button>
+          <button type="button" class="btn" id="copy">Copy this list as CSV</button>
+          <span class="faint" id="copy-msg" style="font-size:12px"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="card">
+      <h3>Two ways to rank</h3>
+      <p><b>Propensity</b> is the model's chance that a practice becomes a top-20% prescriber <i>per patient</i> on the register. It finds receptive practices, which suits early adopters, advocates and speaker programmes.</p>
+      <p><b>Opportunity</b> multiplies that chance by the register size, so it points to where the prescriptions will be. Use it for sales coverage, and for niche or later-line drugs, where most practices never prescribe and size decides who does.</p>
+    </div>
+    <div class="card">
+      <h3>How well it worked on past launches</h3>
+      <p>Each training launch (diabetes, AF, heart failure) was hidden in turn, the model was trained on the other two, and the hidden launch was scored. COPD triple inhalers (2017) and vortioxetine (2015) were then scored by the finished model without any retraining. Share of the top-ranked 20% that became top prescribers, and their share of all new-drug items:</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Ranking</th><th class="r">Became top-20%</th><th class="r">Share of new-drug items</th></tr></thead>
+        <tbody><tr><td colspan="3" class="faint">Average of the three training launches</td></tr></tbody>
+        <tbody>
+          <tr><td>Random practices</td><td class="r">20%</td><td class="r">20%</td></tr>
+          <tr><td>Biggest register first</td><td class="r">17%</td><td class="r">37%</td></tr>
+          <tr><td>Propensity</td><td class="r">28%</td><td class="r">21%</td></tr>
+          <tr><td>Opportunity</td><td class="r">21%</td><td class="r">39%</td></tr>
+          <tr><td colspan="3" class="faint" style="padding-top:8px">COPD triple inhalers, model frozen</td></tr>
+          <tr><td>Biggest register first</td><td class="r">23%</td><td class="r">43%</td></tr>
+          <tr><td>Propensity</td><td class="r">32%</td><td class="r">22%</td></tr>
+          <tr><td>Opportunity</td><td class="r">30%</td><td class="r">47%</td></tr>
+          <tr><td colspan="3" class="faint" style="padding-top:8px">Vortioxetine for depression (2015), model frozen</td></tr>
+          <tr><td>Biggest register first</td><td class="r">25%</td><td class="r">37%</td></tr>
+          <tr><td>Propensity</td><td class="r">21%</td><td class="r">22%</td></tr>
+          <tr><td>Opportunity</td><td class="r">27%</td><td class="r">41%</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>What it can't see</h3>
+      <p>The strongest driver of uptake is local: hospital specialists and area formularies. On launch day that shows up only indirectly, through how quickly neighbouring practices took up earlier new drugs. Expect a useful edge over random visits, not certainty. Refreshing the scores after the first three months of real prescribing would sharpen them.</p>
+      <p class="faint" id="sources"></p>
+    </div>
+  </section>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const DRUGS = /*__DRUGS__*/[]; // [name, "generic"|"brand", BNF chemical code, [conditions]]
+
+const LABELS = {
+  area_adopt_speed_pct: "Neighbours' uptake of recent new drugs",
+  older_alt_per_1k_reg_pct: "Use of existing treatment per patient",
+  total_items_per_1k_list_pct: "Overall prescribing per patient",
+  prevalence_pct: "Prevalence of the condition",
+  register_pct: "Register size",
+};
+const REGIONS = ["London","South East","South West","East of England","Midlands","North West","North East and Yorkshire"];
+
+const state = { area: "diabetes", use: "standard", drug: null, view: "propensity", region: "", q: "", sel: null, shown: 50 };
+const F = DATA.model.features;
+const P = DATA.practices; // [code, name, postcode, region, subicb, lat, lon, list]
+
+function rankText(p) {
+  return p >= 0.5 ? `top ${Math.max(1, Math.round(100 * (1 - p)))}%` : `bottom ${Math.max(1, Math.round(100 * p))}%`;
+}
+function phrase(f, p, r) {
+  const hi = p >= 0.5, rk = rankText(p), ex = DATA.areas[state.area].existing;
+  switch (f) {
+    case "area_adopt_speed_pct": return `Neighbouring practices were ${hi ? "quick" : "slow"} to take up recent new drugs (${rk} of areas)`;
+    case "older_alt_per_1k_reg_pct": return `${hi ? "Heavy" : "Light"} use of ${ex} per patient (${rk}): ${hi ? "a large" : "a small"} pool of treated patients who could switch`;
+    case "total_items_per_1k_list_pct": return `${hi ? "High" : "Low"} overall prescribing per patient (${rk})`;
+    case "prevalence_pct": return `${hi ? "High" : "Low"} prevalence: ${r.prev.toFixed(1)}% of patients are on the register (${rk})`;
+    case "register_pct": return `${hi ? "Large" : "Small"} register: ${r.reg.toLocaleString("en-GB")} patients (${rk})`;
+  }
+}
+function contributions(r) {
+  return F.map((f, j) => ({ f, c: DATA.model.coef[j] * (r.pct[j] - DATA.model.mean[j]) / DATA.model.scale[j], p: r.pct[j] }));
+}
+function reasons(r) {
+  const cs = contributions(r).sort((a, b) => b.c - a.c);
+  let ups = cs.filter(x => x.c > 0).slice(0, 2).map(x => phrase(x.f, x.p, r));
+  const regPct = r.pct[F.indexOf("register_pct")];
+  if (state.view === "opportunity" && regPct >= 0.5) {
+    ups = [phrase("register_pct", regPct, r), ...ups.filter(s => !s.startsWith("Large register"))].slice(0, 3);
+  }
+  const low = cs[cs.length - 1];
+  let drag = low.c < 0 ? phrase(low.f, low.p, r) : "";
+  if (state.view === "opportunity" && low.f === "register_pct") {
+    const next = cs.slice().reverse().find(x => x.f !== "register_pct" && x.c < 0);
+    drag = next ? phrase(next.f, next.p, r) : "";
+  }
+  return { ups, drag };
+}
+
+let rows = [], ranked = [], byCode = new Map();
+function build() {
+  rows = DATA.scores[state.area].map(s => {
+    const p = P[s[0]], own = s.slice(4); let oi = 0;
+    const pct = F.map(f => DATA.shared.includes(f) ? p[8 + DATA.shared.indexOf(f)] : own[oi++]);
+    return { i: s[0], code: p[0], name: p[1], pc: p[2], region: p[3], lat: p[5], lon: p[6], list: p[7],
+             reg: s[1], prop: s[2], prev: s[3], pct, opp: s[2] * s[1] };
+  });
+  byCode = new Map(rows.map(r => [r.code, r]));
+  rank();
+}
+function rank() {
+  const key = state.view === "propensity" ? "prop" : "opp";
+  const pool = rows.filter(r => !state.region || r.region === state.region);
+  pool.sort((a, b) => b[key] - a[key]);
+  pool.forEach((r, k) => { r.rank = k + 1; r.tier = k < pool.length * 0.2 ? 0 : k < pool.length * 0.4 ? 1 : 2; });
+  ranked = pool;
+}
+
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+const canvas = document.getElementById("map"), ctx = canvas.getContext("2d"), tip = document.getElementById("tip");
+let proj = null;
+function drawMap() {
+  const box = canvas.parentElement.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  canvas.width = box.width * dpr; canvas.height = box.height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, box.width, box.height);
+  const pts = ranked.filter(r => r.lat != null);
+  if (!pts.length) return;
+  const k = Math.cos(53 * Math.PI / 180);
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const r of pts) { const x = r.lon * k, y = -r.lat; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const pad = 18, s = Math.min((box.width - 2 * pad) / (x1 - x0 || 1), (box.height - 2 * pad) / (y1 - y0 || 1));
+  const ox = (box.width - s * (x1 - x0)) / 2, oy = (box.height - s * (y1 - y0)) / 2;
+  proj = r => [ox + (r.lon * k - x0) * s, oy + (-r.lat - y0) * s];
+  const col = [css("--dot-top"), css("--dot-mid"), css("--dot-rest")], rad = [3.4, 2.6, 2.1], surf = css("--panel");
+  for (const t of [2, 1, 0]) {
+    ctx.fillStyle = col[t];
+    for (const r of pts) {
+      if (r.tier !== t) continue;
+      const [x, y] = proj(r);
+      ctx.beginPath(); ctx.arc(x, y, rad[t], 0, 2 * Math.PI); ctx.fill();
+      if (t === 0) { ctx.strokeStyle = surf; ctx.lineWidth = 0.8; ctx.stroke(); }
+    }
+  }
+  const sel = state.sel && byCode.get(state.sel);
+  if (sel && sel.lat != null && (!state.region || sel.region === state.region)) {
+    const [x, y] = proj(sel);
+    ctx.strokeStyle = css("--select"); ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(x, y, 8, 0, 2 * Math.PI); ctx.stroke();
+  }
+}
+function nearest(ev) {
+  if (!proj) return null;
+  const b = canvas.getBoundingClientRect(), mx = ev.clientX - b.left, my = ev.clientY - b.top;
+  let best = null, bd = 100;
+  for (const r of ranked) {
+    if (r.lat == null) continue;
+    const [x, y] = proj(r), d = (x - mx) ** 2 + (y - my) ** 2;
+    if (d < bd) { bd = d; best = r; }
+  }
+  return best ? { r: best, mx, my } : null;
+}
+canvas.addEventListener("mousemove", ev => {
+  const h = nearest(ev);
+  if (!h) { tip.hidden = true; return; }
+  const r = h.r;
+  tip.innerHTML = `<b>${esc(r.name)}</b><br><span class="faint">${esc(r.pc)} · #${r.rank.toLocaleString("en-GB")}</span><br>Chance of top 20%: <b>${pctFmt(r.prop)}</b> · register ${r.reg.toLocaleString("en-GB")}`;
+  tip.hidden = false;
+  const bw = canvas.clientWidth;
+  tip.style.left = Math.min(h.mx + 12, bw - 250) + "px"; tip.style.top = (h.my + 12) + "px";
+});
+canvas.addEventListener("mouseleave", () => { tip.hidden = true; });
+canvas.addEventListener("click", ev => { const h = nearest(ev); if (h) select(h.r.code, true); });
+
+function esc(s) { return String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function pctFmt(p) { return Math.round(p * 100) + "%"; }
+
+function renderSummary() {
+  const n = ranked.length, top = ranked.slice(0, Math.round(n * 0.2));
+  const regAll = ranked.reduce((a, r) => a + r.reg, 0), regTop = top.reduce((a, r) => a + r.reg, 0);
+  const avg = top.reduce((a, r) => a + r.prop, 0) / (top.length || 1);
+  document.getElementById("summary").innerHTML = `
+    <div><div class="v">${n.toLocaleString("en-GB")}</div><div class="k">practices scored${state.region ? " in " + esc(state.region) : ""}</div></div>
+    <div><div class="v">${top.length.toLocaleString("en-GB")}</div><div class="k">in the target list (top 20%)</div></div>
+    <div><div class="v">${pctFmt(regAll ? regTop / regAll : 0)}</div><div class="k">of patients on the ${esc(DATA.areas[state.area].label)} register are at those practices</div></div>
+    <div><div class="v">${pctFmt(avg)}</div><div class="k">average chance of becoming a top-20% prescriber (20% at random)</div></div>`;
+}
+function renderList() {
+  const q = state.q.trim().toLowerCase();
+  const list = q ? ranked.filter(r => r.name.toLowerCase().includes(q) || r.code.toLowerCase().includes(q) || (r.pc || "").toLowerCase().replace(/\s/g, "").includes(q.replace(/\s/g, ""))) : ranked;
+  const col = [css("--dot-top"), css("--dot-mid"), css("--dot-rest")];
+  const shown = list.slice(0, state.shown);
+  document.getElementById("rows").innerHTML = shown.map(r => {
+    const why = reasons(r).ups[0] || "No strong positive signal";
+    return `<tr class="${r.code === state.sel ? "sel" : ""}">
+      <td class="r faint">${r.rank.toLocaleString("en-GB")}</td>
+      <td><button type="button" class="rowbtn" data-code="${r.code}"><span class="tier" style="background:${col[r.tier]}"></span><b>${esc(r.name)}</b><br><span class="mono faint">${r.code} · ${esc(r.pc)} · ${esc(r.region || "")}</span></button></td>
+      <td class="r">${r.reg.toLocaleString("en-GB")}</td>
+      <td class="r">${pctFmt(r.prop)}</td>
+      <td class="hide-sm reason1">${esc(why)}</td></tr>`;
+  }).join("") || `<tr><td colspan="5" class="empty">No practice matches “${esc(state.q)}”. Try a practice code like A81001 or part of a postcode.</td></tr>`;
+  document.getElementById("more").hidden = list.length <= state.shown;
+  document.getElementById("list-sub").textContent = q ? `${list.length.toLocaleString("en-GB")} matches` : `showing ${shown.length} of ${list.length.toLocaleString("en-GB")}`;
+  document.getElementById("list-title").textContent = state.view === "propensity" ? "Ranked by propensity" : "Ranked by opportunity";
+}
+function renderDetail() {
+  const el = document.getElementById("detail");
+  const r = state.sel && byCode.get(state.sel);
+  if (!r) {
+    el.innerHTML = `<div class="eyebrow">Practice detail</div><p class="muted" style="margin:0">Pick a practice on the map or in the list to see why it scores the way it does.</p>`;
+    return;
+  }
+  const { ups, drag } = reasons(r);
+  const inRegion = !state.region || r.region === state.region;
+  el.innerHTML = `
+    <div><div class="eyebrow">${esc(r.region || "")} · ${r.code}</div><h2>${esc(r.name)}</h2>
+      <div class="facts num"><span>${esc(r.pc)}</span><span>${r.list.toLocaleString("en-GB")} registered patients</span><span>${r.reg.toLocaleString("en-GB")} on the ${esc(DATA.areas[state.area].label)} register</span></div></div>
+    <div class="facts num"><span>Chance of top 20%: <b style="color:var(--ink)">${pctFmt(r.prop)}</b></span>
+      <span>${inRegion ? `Rank <b style="color:var(--ink)">#${r.rank.toLocaleString("en-GB")}</b> of ${ranked.length.toLocaleString("en-GB")} by ${state.view}` : "Outside the selected region"}</span></div>
+    <ul class="why">
+      ${ups.map(s => `<li class="up"><span class="s">+</span><span>${esc(s)}</span></li>`).join("") || `<li><span class="s">·</span><span class="muted">No feature pushes this practice above average.</span></li>`}
+      ${drag ? `<li class="down"><span class="s">−</span><span>${esc(drag)}</span></li>` : ""}
+    </ul>
+    <div class="meters">${F.map((f, j) => `<div class="meter"><span>${LABELS[f]}</span><div class="bar"><span style="width:${(r.pct[j] * 100).toFixed(0)}%"></span></div><span class="num faint">${Math.round(r.pct[j] * 100)}th</span></div>`).join("")}</div>
+    <p class="faint" style="margin:0;font-size:12px">Bars show the practice's percentile among all practices in England. In the model, a larger register slightly <i>lowers</i> the chance per patient; the opportunity ranking adds size back in.</p>`;
+}
+function renderLegend() {
+  const col = [css("--dot-top"), css("--dot-mid"), css("--dot-rest")];
+  document.getElementById("legend").innerHTML =
+    `<span><i style="background:${col[0]}"></i>Top 20% (target list)</span><span><i style="background:${col[1]}"></i>Next 20%</span><span><i style="background:${col[2]}"></i>Other practices</span><span><i style="background:transparent;border:2px solid ${css("--select")}"></i>Selected</span>`;
+  document.getElementById("map-title").textContent = state.region || "England";
+  const vn = document.getElementById("viewnote");
+  if (state.use === "niche" && state.view === "propensity") {
+    vn.innerHTML = "<b>Not recommended for a niche drug.</b> In the vortioxetine backtest most practices never prescribed it, and Propensity was no better than random. Opportunity found 1.4 times as many top prescribers.";
+  } else if (state.use === "niche") {
+    vn.textContent = "Recommended for a niche or later-line drug: most practices will prescribe little or none, and bigger registers are more likely to have suitable patients. In the vortioxetine backtest this ranking found 1.4 times as many top prescribers as random and covered 41% of prescriptions.";
+  } else if (state.view === "propensity") {
+    vn.textContent = "Recommended for a drug that becomes standard care: who will prescribe most heavily per patient. In past launches these practices became top prescribers 1.4 to 1.6 times as often as random ones.";
+  } else {
+    vn.textContent = "Opportunity: propensity × register size, i.e. where the volume is likely to be. In past launches the top 20% wrote 39 to 47% of all new-drug prescriptions.";
+  }
+}
+function renderAll() { renderStatus(); renderSummary(); renderList(); renderDetail(); renderLegend(); drawMap(); }
+
+function select(code, scroll) {
+  state.sel = code; renderList(); renderDetail(); drawMap();
+  if (scroll && window.innerWidth < 980) document.getElementById("detail-card").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// controls
+const areaSel = document.getElementById("area");
+const opt = ([k, v]) => `<option value="${k}"${k === state.area ? " selected" : ""}>${esc(v.label)}</option>`;
+const areas = Object.entries(DATA.areas);
+areaSel.innerHTML = `<optgroup label="Tested on past launches">${areas.filter(a => a[1].validated).map(opt).join("")}</optgroup>
+  <optgroup label="Tested, mixed result">${areas.filter(a => a[1].mixed).map(opt).join("")}</optgroup>
+  <optgroup label="Not validated">${areas.filter(a => !a[1].validated && !a[1].mixed).sort((a, b) => a[1].label.localeCompare(b[1].label)).map(opt).join("")}</optgroup>`;
+function setArea(k) {
+  state.area = k; state.shown = 50; areaSel.value = k;
+  build(); renderDrugMsg(); renderAll();
+}
+areaSel.addEventListener("change", () => setArea(areaSel.value));
+
+// Drug search: map a typed generic or brand name to the condition(s) it treats
+const genericOf = new Map(DRUGS.filter(d => d[1] === "generic").map(d => [d[2], d[0]]));
+const seen = new Set();
+document.getElementById("drug-list").innerHTML = DRUGS.filter(d => {
+  const k = d[0].toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true;
+}).map(d => `<option value="${esc(d[0])}">`).join("");
+function findDrug(q) {
+  q = q.trim().toLowerCase();
+  if (q.length < 3) return null;
+  let hits = DRUGS.filter(d => d[0].toLowerCase() === q);
+  if (!hits.length) hits = DRUGS.filter(d => d[0].toLowerCase().startsWith(q));
+  if (!hits.length) hits = DRUGS.filter(d => d[0].toLowerCase().includes(q));
+  if (!hits.length) return { name: q, conds: [] };
+  const top = hits[0], conds = [];
+  for (const h of hits.filter(h => h[0].toLowerCase() === top[0].toLowerCase())) for (const c of h[3]) if (!conds.includes(c)) conds.push(c);
+  return { name: top[0], kind: top[1], generic: genericOf.get(top[2]), conds };
+}
+function renderDrugMsg() {
+  const el = document.getElementById("drugmsg"), d = state.drug;
+  if (!d) { el.hidden = true; return; }
+  el.hidden = false;
+  if (!d.conds.length) {
+    el.innerHTML = `<span><b>“${esc(d.name)}”</b> isn't in England's prescribing data yet, so it is probably brand new. Pick the condition it treats from the list.</span>`;
+    return;
+  }
+  const what = d.kind === "brand" && d.generic && d.generic.toLowerCase() !== d.name.toLowerCase()
+    ? `<b>${esc(d.name)}</b> (${esc(d.generic)})` : `<b>${esc(d.name)}</b>`;
+  el.innerHTML = `<span>${what} is prescribed for${d.conds.length > 1 ? " (pick one)" : ""}:</span>` +
+    d.conds.map(c => `<button type="button" class="chip" data-c="${c}" aria-pressed="${c === state.area}">${esc(DATA.areas[c].label)}</button>`).join("");
+}
+document.getElementById("drugmsg").addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (b) setArea(b.dataset.c);
+});
+const drugIn = document.getElementById("drug");
+function onDrug(final) {
+  const v = drugIn.value;
+  if (!v.trim()) { state.drug = null; renderDrugMsg(); return; }
+  const d = findDrug(v);
+  if (!d || (!d.conds.length && !final)) return;
+  state.drug = d;
+  if (d.conds.length && !d.conds.includes(state.area)) setArea(d.conds[0]); else renderDrugMsg();
+}
+drugIn.addEventListener("input", () => onDrug(false));
+drugIn.addEventListener("change", () => onDrug(true));
+
+// First-line / niche switch: picks the ranking that worked for that kind of launch
+function setView(v) {
+  state.view = v; state.shown = 50;
+  document.querySelectorAll("#seg-view button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === v));
+  rank(); renderAll();
+}
+document.getElementById("seg-use").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.use = b.dataset.u;
+  document.querySelectorAll("#seg-use button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  setView(state.use === "niche" ? "opportunity" : "propensity");
+});
+function renderStatus() {
+  const a = DATA.areas[state.area];
+  document.getElementById("status").innerHTML = a.mixed
+    ? `<span class="pill warn">Mixed backtest</span><span>${esc(a.note)} Existing treatment used for scoring: ${esc(a.existing)}.</span>`
+    : a.validated
+    ? `<span class="pill ok">Backtested</span><span>The model was tested on a past launch in this area. Existing treatment used for scoring: ${esc(a.existing)}.${a.note ? " " + esc(a.note) : ""}</span>`
+    : `<span class="pill warn">Not validated</span><span>Same model, applied to a condition it wasn't tested on. Treat the ranking as a reasoned starting point. Existing treatment used for scoring: ${esc(a.existing)}.${a.note ? " " + esc(a.note) : ""}</span>`;
+}
+document.getElementById("seg-view").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (b) setView(b.dataset.v);
+});
+const regSel = document.getElementById("region");
+regSel.innerHTML += REGIONS.map(r => `<option value="${r}">${r}</option>`).join("");
+regSel.addEventListener("change", () => { state.region = regSel.value; state.shown = 50; rank(); renderAll(); });
+document.getElementById("q").addEventListener("input", e => { state.q = e.target.value; state.shown = 50; renderList(); });
+document.getElementById("rows").addEventListener("click", e => { const b = e.target.closest(".rowbtn"); if (b) select(b.dataset.code, true); });
+document.getElementById("more").addEventListener("click", () => { state.shown += 50; renderList(); });
+document.getElementById("copy").addEventListener("click", () => {
+  const head = "rank,practice_code,practice_name,postcode,region,register,chance_top20,main_reason";
+  const q = state.q.trim().toLowerCase();
+  const list = (q ? ranked.filter(r => r.name.toLowerCase().includes(q) || r.code.toLowerCase().includes(q)) : ranked).slice(0, state.shown);
+  const csv = [head, ...list.map(r => [r.rank, r.code, `"${r.name.replace(/"/g, '""')}"`, r.pc, r.region, r.reg, r.prop.toFixed(3), `"${(reasons(r).ups[0] || "").replace(/"/g, '""')}"`].join(","))].join("\n");
+  const msg = document.getElementById("copy-msg");
+  navigator.clipboard.writeText(csv).then(() => { msg.textContent = `Copied ${list.length} rows`; })
+    .catch(() => { msg.textContent = "Copying isn't allowed here. Select the table to copy it instead."; });
+});
+let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(drawMap, 80); });
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderAll);
+new MutationObserver(renderAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+document.getElementById("stamp").innerHTML = `Data to ${esc(DATA.data_to)} · QOF ${esc(DATA.qof_year)}<br>Neighbours' uptake from ${DATA.n_recent_launches} drugs launched 2019-2025`;
+document.getElementById("sources").textContent = "Sources: NHSBSA English Prescribing Dataset, NHS England QOF registers, ODS practice files, postcodes.io. Public data; scores are model estimates.";
+
+build();
+state.sel = ranked[0] && ranked[0].code;
+renderAll();
+</script>

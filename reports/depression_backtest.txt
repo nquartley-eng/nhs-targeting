@@ -1,0 +1,62 @@
+== Region assignment
+region_source
+ods_current    7692
+area_modal      455
+unknown         327
+== National uptake of Vortioxetine in the downloaded months
+        items  practices
+ym                      
+201509      1          1
+201510      1          1
+201511     10          6
+201710   3808       1375
+201711   4107       1436
+201712   4292       1484
+
+== depression: launch 201512, features from QOF 2014-15 (published 201510) and months 201412-201511; outcome months 201710-201712, register from QOF 2017-18
+Latest month used by any feature: 201511 (must be before 201512)
+Practices active at launch: 7,739; exclusions: closed by month 24 489, not in outcome QOF 206, register < 20 10
+Training rows: 7,034; top-20% cut-off: 2.7 items per 1,000 register patients (3 months); target=1: 1,407
+Practices with zero new-drug items at outcome: 74.0%
+Top-20% overlap if we used month 24 alone: 85.9%
+Earlier new drugs used for adoption speed (23): 0209000Z0 (201104, 6 mo); 0301020R0 (201210, 6 mo); 0301020S0 (201211, 6 mo); 0301020T0 (201411, 6 mo); 0302000V0 (201401, 6 mo); 0303030B0 (201111, 6 mo); 0404000U0 (201305, 6 mo); 0407020AG (201105, 6 mo); 0601012Z0 (201302, 6 mo); 0601023AE (201109, 6 mo); 0601023AF (201209, 6 mo); 0601023AG (201301, 6 mo); 0601023AH (201212, 6 mo); 0601023AI (201303, 6 mo); 0601023AK (201403, 6 mo); 0601023AL (201405, 6 mo); 0601023AM (201404, 6 mo); 0601023AN (201409, 6 mo); 0601023AP (201503, 6 mo); 0601023AQ (201503, 6 mo); 0601023AU (201504, 6 mo); 0704020AE (201303, 6 mo); DOAC class (201109, 6 mo)
+Missing values in features: area_adopt_speed 2, area_older_alt_per_1k_reg 2, area_total_items_per_1k_list 2
+Single-feature AUC (0.5 = no signal, 1 = perfect; >0.9 would suggest leakage):
+  list_size                  0.606
+  register                   0.584
+  prevalence                 0.511
+  older_alt_per_1k_reg       0.536
+  total_items_per_1k_list    0.527
+  adopt_speed                0.549
+  early_adopter_share        0.557
+  area_adopt_speed           0.526
+  area_older_alt_per_1k_reg  0.508
+  area_total_items_per_1k_list 0.532
+  [insight, NOT a feature: uses the outcome] other practices in the same area: 0.746
+Practices with no area: 0
+Share in top 20% by region:
+region
+South East                  30.0%
+East of England             25.0%
+Midlands                    19.5%
+North West                  18.7%
+London                      17.2%
+North East and Yorkshire    16.7%
+South West                  14.6%
+
+== depression backtest: frozen model, never trained on this launch
+                                  auc  precision_top20  lift_top20  volume_top20
+random                          0.507            0.203       1.013         0.189
+biggest_register                0.584            0.246       1.230         0.373
+model (propensity)              0.515            0.215       1.073         0.215
+model x register (opportunity)  0.597            0.273       1.365         0.412
+
+AUC within each region (ranking practices against their own region only):
+region
+East of England             0.679
+London                      0.482
+Midlands                    0.510
+North East and Yorkshire    0.478
+North West                  0.416
+South East                  0.517
+South West                  0.506
