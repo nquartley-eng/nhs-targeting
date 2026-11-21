@@ -309,31 +309,6 @@ data/raw/        downloaded source files (not committed; rebuild with the steps 
 data/processed/  cleaned tables (not committed)
 ```
 
-## Glossary
-
-| Term | Plain meaning |
-|---|---|
-| **GP practice** | A local doctors' surgery; England has about 6,100 |
-| **Launch** | When a new drug becomes available for GPs to prescribe |
-| **Item** | One prescription for one drug |
-| **BNF code** | The NHS code for every drug; its first digits say what it treats (e.g. 0403 = antidepressants) |
-| **QOF** | Quality and Outcomes Framework: NHS data giving each practice's number of patients with each long-term condition |
-| **Register** | The patients at a practice with a given condition, e.g. the diabetes register |
-| **Prevalence** | Register size as a share of all the practice's patients |
-| **DOAC / SGLT2 / ARNI** | Drug classes: blood thinners for AF; diabetes drugs; Entresto for heart failure |
-| **Formulary** | A local list of approved drugs, often set by area or hospital committees |
-| **Feature** | A piece of information the model looks at |
-| **Target** | The answer the model learns to predict: top 20% prescriber or not |
-| **Leakage** | Accidentally letting the model see information from after launch day |
-| **Leave-one-launch-out** | Train on all launches but one, test on the one left out, repeat |
-| **Backtest** | Scoring a past launch as if it were today, then checking what really happened |
-| **Logistic regression** | A simple model: a weighted checklist of factors added up |
-| **Gradient boosting** | A more complex model made of many small decision trees |
-| **ROC-AUC** | How often the model ranks a real top prescriber above another practice. 0.5 = guessing, 1.0 = perfect |
-| **Precision (top 20%)** | Of the practices the model would target, the share that became top prescribers |
-| **Lift** | Precision divided by the random rate (20%): "×1.4 better than random" |
-| **Propensity / opportunity** | Chance of being a top prescriber per patient / that chance × number of patients |
-| **Percentile** | Where a practice ranks among all practices, e.g. 90th = higher than 90% |
 
 ## Next steps
 
