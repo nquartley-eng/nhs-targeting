@@ -310,15 +310,6 @@ data/processed/  cleaned tables (not committed)
 ```
 
 
-## Next steps
-
-* **A "month-3 refresh":** rescore practices using the first three months of real prescribing, which would likely
-  predict much better.
-* **Backtest a specialist-started drug** (e.g. dementia or rheumatoid arthritis), the one launch type not yet
-  tested.
-* **More launches to learn from:** 2019-2025 launches such as finerenone, inclisiran and tirzepatide.
-* **Add deprivation and age profile** (from practice postcodes and list-size age bands).
-* **A niche-drug model** that predicts "any uptake" for later-line drugs, trained on niche launches.
 
 ## How this was built
 
@@ -330,7 +321,7 @@ open about how the work was split:
   * the key decisions (the target definition, what counts as known at launch, how to validate, which ranking views
     to offer, which conditions to cover and test)
   * reviewing the results
-* **Claude's part:** much of the code, the analyses and the write-ups, done under that direction.
+* **Claude's part:** the code, the analyses and the write-ups, done under that direction.
 
 The safeguards that make the results credible were deliberate parts of the process:
 * publication-date leakage checks that stop the build
