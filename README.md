@@ -1,4 +1,4 @@
-# nhs-targeting: which GP practices will take up a new drug?
+# NHS-targeting: which GP practices will take up a new drug?
 
 A model that looks at every GP practice in England on the day a new drug launches and estimates which ones will
 become its **strongest prescribers** two years later. It uses only public NHS data that would have been available on
